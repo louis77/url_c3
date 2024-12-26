@@ -13,7 +13,7 @@ Parse URLs:
 ```c3
 import url;
 
-Url my_url = url::parse_url("jdbc:mysql://test_user:ouupppssss@localhost:3306/sakila?profileSQL=true#fragment")!;
+Url my_url = url::parse("jdbc:mysql://test_user:ouupppssss@localhost:3306/sakila?profileSQL=true#fragment")!;
 
 assert(my_url.scheme == "jdbc:mysql");
 assert(my_url.host == "localhost");
@@ -40,6 +40,22 @@ String str = string::new_format("%s", url);
 assert(str == "jdbc:mysql://test_user:ouupppssss@localhost:3306/sakila?profileSQL=true");
 ```
 
+If you need structured access to the query part, you can fetch a HashMap of List(\<String\>) like so:
+
+```c3
+Url url = parse("foo://example.com:8042/over/there?name=ferret&age=99&age=11#nose")!;
+
+Values vals = url.query_values(allocator::temp());
+defer vals.free();
+
+ListStr l_name = vals["name"]!;
+assert(l_name[0] == "ferret");
+
+ListStr l_age = vals["age"]!;
+assert(l_age[0] == "99");
+assert(l_age[1] == "11");
+```
+
 ## API
 
 ```c3
@@ -54,8 +70,12 @@ struct Url {
     String fragment;
 }
 
-fn Url!   parse_url(String url_string)
+def ListStr = List(<String>);
+def Values = map::HashMap(<String, ListStr>);
+
+fn Url!   parse(String url_string)
 fn String Url.to_string(Url* self, Allocator allocator = allocator::heap());
+fn Values Url.query_values(Url* self, Allocator allocator = allocator::heap())
 ```
 
 ## LICENSE

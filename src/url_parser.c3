@@ -1,6 +1,11 @@
 module url;
 
 import std::io;
+import std::collections::map;
+import std::collections::list;
+
+def ListStr = List(<String>);
+def Values = map::HashMap(<String, ListStr>);
 
 struct Url(Printable) {
     String scheme;
@@ -26,7 +31,7 @@ fn usz! String.index_of_chars(String s, char[] needle)
     return SearchResult.MISSING?;
 }
 
-fn Url! parse_url(String url_string) {
+fn Url! parse(String url_string) {
     Url url = Url{};
     url_string = url_string.trim();
     if (url_string.len == 0) {
@@ -170,4 +175,27 @@ fn String Url.to_string(Url* self, Allocator allocator = allocator::temp()) @dyn
 
         return builder.str_view();
     };
+}
+
+fn Values Url.query_values(Url* self, Allocator allocator = allocator::heap()) {
+    Values vals = {};
+
+    String[] raw_vals = self.query.split("&");
+    defer free(raw_vals);
+
+    foreach (rv : raw_vals) {
+        String[] parts = rv.split("=", 2);
+        defer free(parts);
+
+        if (try existing = vals[parts[0]]) {
+            existing.push(parts[1]);
+            vals[parts[0]] = existing;
+        } else {
+            ListStr new_list;
+            new_list.new_init_with_array({parts[1]}, allocator);
+            vals[parts[0]] = new_list;
+        }
+    }
+
+    return vals;
 }

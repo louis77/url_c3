@@ -5,7 +5,7 @@ import std::io;
 // Parser tests
 
 fn void! test_parse_foo() {
-    Url url = parse_url("foo://example.com:8042/over/there?name=ferret#nose")!;
+    Url url = parse("foo://example.com:8042/over/there?name=ferret#nose")!;
 
     assert(url.scheme == "foo", "got '%s'", url.scheme);
     assert(url.host == "example.com", "got '%s'", url.host);
@@ -18,7 +18,7 @@ fn void! test_parse_foo() {
 }
 
 fn void! test_parse_urn() {
-    Url url = parse_url("urn:example:animal:ferret:nose")!;
+    Url url = parse("urn:example:animal:ferret:nose")!;
 
     assert(url.scheme == "urn");
     assert(url.host == "");
@@ -31,7 +31,7 @@ fn void! test_parse_urn() {
 }
 
 fn void! test_parse_jdbc() {
-    Url url = parse_url("jdbc:mysql://test_user:ouupppssss@localhost:3306/sakila?profileSQL=true")!;
+    Url url = parse("jdbc:mysql://test_user:ouupppssss@localhost:3306/sakila?profileSQL=true")!;
 
     assert(url.scheme == "jdbc:mysql");
     assert(url.host == "localhost");
@@ -44,7 +44,7 @@ fn void! test_parse_jdbc() {
 }
 
 fn void! test_parse_ftp() {
-    Url url = parse_url("ftp://ftp.is.co.za/rfc/rfc1808.txt")!;
+    Url url = parse("ftp://ftp.is.co.za/rfc/rfc1808.txt")!;
 
     assert(url.scheme == "ftp");
     assert(url.host == "ftp.is.co.za");
@@ -57,7 +57,7 @@ fn void! test_parse_ftp() {
 }
 
 fn void! test_parse_http() {
-    Url url = parse_url("http://www.ietf.org/rfc/rfc2396.txt#header1")!;
+    Url url = parse("http://www.ietf.org/rfc/rfc2396.txt#header1")!;
 
     assert(url.scheme == "http");
     assert(url.host == "www.ietf.org");
@@ -70,7 +70,7 @@ fn void! test_parse_http() {
 }
 
 fn void! test_parse_ldap() {
-    Url url = parse_url("ldap://[2001:db8::7]/c=GB?objectClass=one&objectClass=two")!;
+    Url url = parse("ldap://[2001:db8::7]/c=GB?objectClass=one&objectClass=two")!;
 
     assert(url.scheme == "ldap");
     assert(url.host == "[2001:db8::7]");
@@ -83,7 +83,7 @@ fn void! test_parse_ldap() {
 }
 
 fn void! test_parse_mailto() {
-    Url url = parse_url("mailto:John.Doe@example.com")!;
+    Url url = parse("mailto:John.Doe@example.com")!;
 
     assert(url.scheme == "mailto");
     assert(url.host == "");
@@ -96,7 +96,7 @@ fn void! test_parse_mailto() {
 }
 
 fn void! test_parse_news() {
-    Url url = parse_url("news:comp.infosystems.www.servers.unix")!;
+    Url url = parse("news:comp.infosystems.www.servers.unix")!;
 
     assert(url.scheme == "news");
     assert(url.host == "");
@@ -109,7 +109,7 @@ fn void! test_parse_news() {
 }
 
 fn void! test_parse_tel() {
-    Url url = parse_url("tel:+1-816-555-1212")!;
+    Url url = parse("tel:+1-816-555-1212")!;
 
     assert(url.scheme == "tel");
     assert(url.host == "");
@@ -122,7 +122,7 @@ fn void! test_parse_tel() {
 }
 
 fn void! test_parse_telnet() {
-    Url url = parse_url("telnet://192.0.2.16:80/")!;
+    Url url = parse("telnet://192.0.2.16:80/")!;
 
     assert(url.scheme == "telnet");
     assert(url.host == "192.0.2.16");
@@ -135,7 +135,7 @@ fn void! test_parse_telnet() {
 }
 
 fn void! test_parse_urn2() {
-    Url url = parse_url("urn:oasis:names:specification:docbook:dtd:xml:4.1.2")!;
+    Url url = parse("urn:oasis:names:specification:docbook:dtd:xml:4.1.2")!;
 
     assert(url.scheme == "urn");
     assert(url.host == "");
@@ -148,7 +148,7 @@ fn void! test_parse_urn2() {
 }
 
 fn void test_parse_empty() {
-    Url url = parse_url("       ")!;
+    Url url = parse("       ")!;
 
     assert(url.scheme == "");
     assert(url.host == "");
@@ -246,3 +246,35 @@ fn void! test_string_empty() {
     assert(str == "");
 }
 
+// query_values
+
+fn void! test_query_values1() {
+    Url url = parse("foo://example.com:8042/over/there?name=ferret=ok#nose")!;
+    
+    Values vals = url.query_values();
+
+    assert(vals.len() == 1);
+    ListStr l = vals["name"]!;
+
+    assert(l.len() == 1);
+    assert(l[0] == "ferret=ok");
+}
+
+fn void! test_query_values2() {
+@pool() {
+    Url url = parse("foo://example.com:8042/over/there?name=ferret&age=99&age=11#nose")!;
+    
+    Values vals = url.query_values(allocator::temp());
+    defer vals.free();
+    assert(vals.len() == 2);
+    
+    ListStr l_name = vals["name"]!;
+    assert(l_name.len() == 1);
+    assert(l_name[0] == "ferret");
+
+    ListStr l_age = vals["age"]!;
+    assert(l_age.len() == 2);
+    assert(l_age[0] == "99");
+    assert(l_age[1] == "11");
+};
+}
