@@ -1,6 +1,8 @@
 module url;
 
-struct Url {
+import std::io;
+
+struct Url(Printable) {
     String scheme;
     String host;
     uint   port;
@@ -112,4 +114,56 @@ fn Url! parse_url(String url_string) {
     }
 
     return url;
+}
+
+fn String Url.to_string(Url* self, Allocator allocator = allocator::temp()) @dynamic 
+{
+    @pool(allocator)
+	{
+        DString builder = dstring::new("", allocator);
+        defer builder.free();
+        
+        // Add scheme if it exists
+        if (self.scheme != "") {
+            builder.append_chars(self.scheme);
+            builder.append_char(':');
+            if (self.host.len > 0) builder.append_chars("//");
+        }
+
+        // Add username and password if they exist
+        if (self.username != "") {
+            builder.append_chars(self.username);
+            if (self.password != "") {
+                builder.append_char(':');
+                builder.append_chars(self.password);
+            }
+            builder.append_char('@');
+        }
+
+        // Add host
+        builder.append_chars(self.host);
+
+        // Add port
+        if (self.port != 0) {
+            builder.append_char(':');
+            builder.appendf("%d", self.port);
+        }
+
+        // Add path
+        builder.append_chars(self.path);
+
+        // Add query if it exists
+        if (self.query != "") {
+            builder.append_char('?');
+            builder.append_chars(self.query);
+        }
+
+        // Add fragment if it exists
+        if (self.fragment != "") {
+            builder.append_char('#');
+            builder.append_chars(self.fragment);
+        }
+
+        return builder.str_view();
+    };
 }
