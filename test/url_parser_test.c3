@@ -147,6 +147,19 @@ fn void! test_parse_urn2() {
     assert(url.fragment == "");
 }
 
+fn void test_parse_empty() {
+    Url url = parse_url("       ")!;
+
+    assert(url.scheme == "");
+    assert(url.host == "");
+    assert(url.port == 0);
+    assert(url.username == "", "got '%s'", url.username);
+    assert(url.password == "", "got '%s'", url.password);
+    assert(url.path == "");
+    assert(url.query == "");
+    assert(url.fragment == "");
+}
+
 // to_string() tests
 
 fn void! test_string_foo() {
@@ -224,5 +237,12 @@ fn void! test_string_urn2() {
     String str = string::new_format("%s", url);
 
     assert(str == "urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
+}
+
+fn void! test_string_empty() {
+    Url url = {};
+    String str = string::new_format("%s", url);
+
+    assert(str == "");
 }
 

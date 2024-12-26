@@ -28,6 +28,10 @@ fn usz! String.index_of_chars(String s, char[] needle)
 
 fn Url! parse_url(String url_string) {
     Url url = Url{};
+    url_string = url_string.trim();
+    if (url_string.len == 0) {
+        return url;
+    }
     
     // Parse scheme
     if (try pos = url_string.index_of("://")) {
@@ -122,7 +126,7 @@ fn String Url.to_string(Url* self, Allocator allocator = allocator::temp()) @dyn
 	{
         DString builder = dstring::new("", allocator);
         defer builder.free();
-        
+
         // Add scheme if it exists
         if (self.scheme != "") {
             builder.append_chars(self.scheme);
