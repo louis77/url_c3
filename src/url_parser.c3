@@ -64,6 +64,7 @@ fn Url! parse(String url_string) {
         if (try usz userInfoEnd = url_string.index_of_char('@')) {
             String userinfo = authority[..userInfoEnd-1];
             String[] userpass = userinfo.split(":");
+            defer free(userpass);
             url.username = userpass[0];
             if (userpass.len > 1) {
                 url.password = userpass[1];
