@@ -18,7 +18,7 @@ struct Url(Printable) {
     String fragment;
 }
 
-fn usz! String.index_of_chars(String s, char[] needle)
+fn usz! String.index_of_chars(String s, char[] needle) @if(!$defined(String.index_of_chars()))
 {
     foreach (i, c : s)
     {
