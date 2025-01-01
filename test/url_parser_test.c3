@@ -160,6 +160,19 @@ fn void test_parse_empty() {
     assert(url.fragment == "");
 }
 
+fn void test_parse_mysql() {
+    Url url = parse("mysql://root@localhost:3306/test")!;
+
+    assert(url.scheme == "mysql");
+    assert(url.host == "localhost");
+    assert(url.port == 3306);
+    assert(url.username == "root", "got '%s'", url.username);
+    assert(url.password == "", "got '%s'", url.password);
+    assert(url.path == "/test");
+    assert(url.query == "");
+    assert(url.fragment == "");
+}
+
 // to_string() tests
 
 fn void! test_string_foo() {
@@ -237,6 +250,13 @@ fn void! test_string_urn2() {
     String str = string::new_format("%s", url);
 
     assert(str == "urn:oasis:names:specification:docbook:dtd:xml:4.1.2");
+}
+
+fn void! test_string_mysql() {
+    Url url = {.scheme="mysql", .username="root", .host="localhost", .port=3306, .path="/test"};
+    String str = string::new_format("%s", url);
+
+    assert(str == "mysql://root@localhost:3306/test");
 }
 
 fn void! test_string_empty() {

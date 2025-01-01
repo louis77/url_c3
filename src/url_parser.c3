@@ -18,11 +18,11 @@ struct Url(Printable) {
     String fragment;
 }
 
-fn usz! String.index_of_chars(String s, char[] needle) 
+fn usz! String.index_of_chars(String s, char[] needle)
 {
-    foreach (i, c : s) 
+    foreach (i, c : s)
     {
-        foreach (j, pin : needle) 
+        foreach (j, pin : needle)
         {
             if (c == pin) return i;
         }
@@ -37,7 +37,7 @@ fn Url! parse(String url_string) {
     if (url_string.len == 0) {
         return url;
     }
-    
+
     // Parse scheme
     if (try pos = url_string.index_of("://")) {
         url.scheme = url_string[0 .. pos-1];
@@ -48,7 +48,7 @@ fn Url! parse(String url_string) {
         url.scheme = url_string[0 .. url_string.index_of(":")!-1];
         url_string = url_string[url.scheme.len+1..];
         url.path = url_string;
-        
+
         return url;
     }
 
@@ -96,8 +96,8 @@ fn Url! parse(String url_string) {
     long fragmentIndex = (long)url_string.index_of_char('#') ?? -1;
 
     if (queryIndex != -1 || fragmentIndex != -1) {
-        long pathEnd = min(queryIndex == -1 ? url_string.len : queryIndex, 
-                           fragmentIndex == -1 ? url_string.len : fragmentIndex, 
+        long pathEnd = min(queryIndex == -1 ? url_string.len : queryIndex,
+                           fragmentIndex == -1 ? url_string.len : fragmentIndex,
                            url_string.len);
         url.path = url_string[0 .. (pathEnd-1)];
     } else {
@@ -125,12 +125,11 @@ fn Url! parse(String url_string) {
     return url;
 }
 
-fn String Url.to_string(Url* self, Allocator allocator = allocator::temp()) @dynamic 
+fn String Url.to_string(Url* self, Allocator allocator = allocator::temp()) @dynamic
 {
     @pool(allocator)
 	{
-        DString builder = dstring::new("", allocator);
-        defer builder.free();
+        DString builder = dstring::temp_new();
 
         // Add scheme if it exists
         if (self.scheme != "") {
@@ -173,7 +172,7 @@ fn String Url.to_string(Url* self, Allocator allocator = allocator::temp()) @dyn
             builder.append_chars(self.fragment);
         }
 
-        return builder.str_view();
+        return builder.copy_str(allocator);
     };
 }
 
